@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { postQueue } = require("../queues/postQueue");
 const pool = require("../db/db");
+const { POST_STATUS } = require("../constants/postStatus")
 router.post("/schedule", async ( req, res ) => {
     const { content, runAt } = req.body;
     const delay = new Date(runAt) - new Date();
@@ -48,8 +49,8 @@ router.delete("/:id", async (req, res) => {
     const { id } = req.params;
     try{
         const result = await pool.query(
-            "DELETE FROM POSTS WHERE id = $1 AND status = 'scheduled' RETURNING id",
-            [id]
+            "DELETE FROM POSTS WHERE id = $1 AND status = $2 RETURNING id",
+            [id, POST_STATUS.SCHEDULED]
         );
         if(result.rowCount === 0){
             return res.status(400).json({
